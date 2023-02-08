@@ -5,10 +5,12 @@ import {open} from 'sqlite';
 import ObjectsToCsv from 'objects-to-csv';
 import path from 'path';
 
+const USER_HOME = process.env.HOME || process.env.USERPROFILE;
+
 const program = new Command();
 
 const db = await open({
-  filename: './cielago.db',
+  filename: path.join(USER_HOME, 'Cielago.db'),
   driver: sqlite3.Database
 })
 
@@ -72,11 +74,6 @@ const insertParticipants = async (metadata, role, user) => {
       ])
 }
 
-// TODO
-// db storage need to move ./.cielago/cielago.db
-
-// TODO
-// add check_at timestamp
 program
     .name('cielago')
     .version('0.0.1')
@@ -143,10 +140,6 @@ program
     .action(async () => {
       await initDB();
       try {
-        const db = await open({
-          filename: './cielago.db',
-          driver: sqlite3.Database
-        })
         const spaces = await db.all('SELECT * FROM space')
         // print a table of spaces
         console.table(spaces.map((item) => ({
@@ -177,10 +170,6 @@ program
       }
       const space_id = url.split('/').pop()
       try {
-        const db = await open({
-          filename: './cielago.db',
-          driver: sqlite3.Database
-        })
         await db.run(`DELETE FROM space WHERE rest_id = ?`, [space_id])
         console.log('space removed success!')
         await db.run(`DELETE FROM participants WHERE space_id = ?`, [space_id])
@@ -203,15 +192,15 @@ program
       }
       const space_id = url.split('/').pop()
       try {
-        const db = await open({
-          filename: './cielago.db',
-          driver: sqlite3.Database
-        })
         const participants = await db.all(`SELECT * FROM participants WHERE space_id = ?`, [space_id])
+        if (participants.length === 0) {
+          console.log('No participants found!')
+          process.exit(0)
+        }
         const csv = new ObjectsToCsv(participants)
-        const filename = `./${space_id}.csv`
-        await csv.toDisk(filename, {allColumns: true})
-        console.log('export participants success! file path:', path.resolve(filename))
+        const filepath = path.join(USER_HOME, `cielago-${space_id}.csv`)
+        await csv.toDisk(filepath, {allColumns: true})
+        console.log('Export participants success! file path:', path.resolve(filepath))
       } catch (e) {
         console.log(e)
       }
