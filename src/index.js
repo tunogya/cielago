@@ -1,10 +1,10 @@
 #! /usr/bin/env node
-const {Command} = require('commander');
-const puppeteer = require('puppeteer');
-const sqlite3 = require('sqlite3');
-const {open} = require('sqlite');
-const ObjectsToCsv = require('objects-to-csv');
-const path = require('path');
+import {Command} from 'commander';
+import puppeteer from 'puppeteer';
+import sqlite3 from 'sqlite3';
+import {open} from 'sqlite';
+import ObjectsToCsv from 'objects-to-csv';
+import path from 'path';
 
 const program = new Command();
 

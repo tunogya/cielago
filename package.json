@@ -3,6 +3,7 @@
   "version": "0.0.4",
   "main": "src/index.js",
   "author": "tunogya",
+  "type": "module",
   "license": "GNU General Public License v3.0",
   "homepage": "https://github.com/tunogya/cielago",
   "publishConfig": {
