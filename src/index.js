@@ -11,44 +11,44 @@ const program = new Command();
 
 const initDB = async (db) => {
   await db.run(`CREATE TABLE IF NOT EXISTS space
-                      (
-                          rest_id               TEXT PRIMARY KEY,
-                          state                 TEXT,
-                          title                 TEXT,
-                          media_key             TEXT,
-                          created_at            INTEGER,
-                          started_at            INTEGER,
-                          updated_at            INTEGER,
-                          conversation_controls INTEGER,
-                          total_replay_watched  INTEGER,
-                          total_live_listeners  INTEGER,
-                          creator_rest_id       TEXT
-                      )`)
+                (
+                    rest_id               TEXT PRIMARY KEY,
+                    state                 TEXT,
+                    title                 TEXT,
+                    media_key             TEXT,
+                    created_at            INTEGER,
+                    started_at            INTEGER,
+                    updated_at            INTEGER,
+                    conversation_controls INTEGER,
+                    total_replay_watched  INTEGER,
+                    total_live_listeners  INTEGER,
+                    creator_rest_id       TEXT
+                )`)
   await db.run(`CREATE TABLE IF NOT EXISTS participants
-                      (
-                          space_id            TEXT,
-                          role                TEXT,
-                          periscope_user_id   TEXT,
-                          start               INTEGER,
-                          check_at            INTEGER,
-                          twitter_screen_name TEXT,
-                          display_name        TEXT,
-                          avatar_url          TEXT,
-                          is_verified         INTEGER,
-                          is_muted_by_admin   INTEGER,
-                          is_muted_by_guest   INTEGER,
-                          user_rest_id        TEXT,
-                          has_nft_avatar      INTEGER,
-                          is_blue_verified    INTEGER,
-                          primary key (space_id, role, user_rest_id)
-                      )`)
+                (
+                    space_id            TEXT,
+                    role                TEXT,
+                    periscope_user_id   TEXT,
+                    start               INTEGER,
+                    check_at            INTEGER,
+                    twitter_screen_name TEXT,
+                    display_name        TEXT,
+                    avatar_url          TEXT,
+                    is_verified         INTEGER,
+                    is_muted_by_admin   INTEGER,
+                    is_muted_by_guest   INTEGER,
+                    user_rest_id        TEXT,
+                    has_nft_avatar      INTEGER,
+                    is_blue_verified    INTEGER,
+                    primary key (space_id, role, user_rest_id)
+                )`)
 }
 
 const insertSpace = async (db, metadata) => {
   await db.run(`REPLACE INTO space (rest_id, state, title, media_key, created_at, started_at, updated_at,
                                                  conversation_controls, total_replay_watched, total_live_listeners,
                                                  creator_rest_id)
-                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [metadata.rest_id, metadata.state, metadata.title, metadata.media_key, metadata.created_at,
         metadata.started_at, metadata.updated_at, metadata.conversation_controls,
         metadata.total_replay_watched, metadata.total_live_listeners, metadata.creator_results.result.rest_id])
@@ -60,7 +60,7 @@ const insertParticipants = async (db, metadata, role, user) => {
                                                             display_name, avatar_url, is_verified, is_muted_by_admin,
                                                             is_muted_by_guest, user_rest_id, has_nft_avatar,
                                                             is_blue_verified)
-                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         metadata.rest_id, role, user.periscope_user_id, user.start, Date.now(), user.twitter_screen_name,
         user.display_name, user.avatar_url, user.is_verified, user.is_muted_by_admin,
@@ -87,12 +87,15 @@ program
       await initDB(db);
       const reg = new RegExp(/https:\/\/twitter.com\/i\/spaces\/\w+/)
       if (!reg.test(url)) {
-        console.log(chalk.red('url is not valid'))
+        console.log(chalk.red('ERROR:'), 'Url is not valid')
         process.exit(0)
       }
       // delete ? and all string behind ? in url
       url = url.split('?')[0]
+      console.log(chalk.green('INFO:'), `cielago@${program.version()}`)
+      console.log(chalk.green('INFO:'), 'twitter space:', url)
       try {
+        console.log(chalk.green('INFO:'), 'Start puppeteer...')
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
         await page.setUserAgent(
@@ -108,7 +111,7 @@ program
                 const metadata = res.data.audioSpace.metadata
                 await insertSpace(db, metadata);
                 const {admins, speakers, listeners, total} = res.data.audioSpace.participants
-                console.log(chalk.green(metadata.title.slice(0, 10) + '...', 'total participants:', total))
+                console.log(chalk.green('INFO:'), metadata.title.slice(0, 10) + '...', 'total participants:', chalk.green(total), 'total_live_listeners:', chalk.yellow(metadata.total_live_listeners))
                 for (const admin of admins) {
                   await insertParticipants(db, metadata, 'admin', admin)
                 }
@@ -119,19 +122,19 @@ program
                   await insertParticipants(db, metadata, 'listener', listener)
                 }
                 if (metadata.state === 'Ended') {
-                  console.log(chalk.red(metadata.title.slice(0, 10) + '...', 'This space is ended!'))
+                  console.log(chalk.red('WARNING:'), metadata.title.slice(0, 10) + '...', 'This space is ended!')
                   await browser.close()
                   process.exit(0)
                 }
               }
             } catch (e) {
-              console.log(chalk.grey(e))
+              console.log(chalk.yellow('WARNING:'), e)
             }
           }
         });
         await page.goto(url);
       } catch (e) {
-        console.log(chalk.grey(e))
+        console.log(chalk.yellow('WARNING:'), e)
       }
     })
 
@@ -157,7 +160,7 @@ program
           url: `https://twitter.com/i/spaces/${item.rest_id}`,
         })))
       } catch (e) {
-        console.log(chalk.grey(e))
+        console.log(chalk.yellow('WARNING:'), e)
       }
       await db.close()
     })
@@ -176,18 +179,22 @@ program
       await initDB(db);
       const reg = new RegExp(/https:\/\/twitter.com\/i\/spaces\/\w+/)
       if (!reg.test(url)) {
-        console.log(chalk.red('url is not valid'))
+        console.log(chalk.red('ERROR:'), 'url is not valid')
         process.exit(0)
       }
       url = url.split('?')[0]
       const space_id = url.split('/').pop()
       try {
-        await db.run(`DELETE FROM space WHERE rest_id = ?`, [space_id])
-        console.log(chalk.green('space removed success!'))
-        await db.run(`DELETE FROM participants WHERE space_id = ?`, [space_id])
-        console.log(chalk.green('participants removed success!'))
+        await db.run(`DELETE
+                      FROM space
+                      WHERE rest_id = ?`, [space_id])
+        console.log(chalk.green('INFO:'), 'space removed success!')
+        await db.run(`DELETE
+                      FROM participants
+                      WHERE space_id = ?`, [space_id])
+        console.log(chalk.green('INFO:'), 'participants removed success!')
       } catch (e) {
-        console.log(chalk.grey(e))
+        console.log(chalk.yellow('WARNING:'), e)
       }
       await db.close()
     })
@@ -196,7 +203,7 @@ program
     .command('export')
     .description('Export a twitter space log')
     .argument('<url>', 'twitter space url')
-    .action(async (url, options) => {
+    .action(async (url) => {
       const db = await open({
         filename: './Cielago.db',
         driver: sqlite3.Database
@@ -204,23 +211,25 @@ program
       await initDB(db);
       const reg = new RegExp(/https:\/\/twitter.com\/i\/spaces\/\w+/)
       if (!reg.test(url)) {
-        console.log(chalk.red('url is not valid'))
+        console.log(chalk.red('ERROR:'), 'url is not valid')
         process.exit(0)
       }
       url = url.split('?')[0]
       const space_id = url.split('/').pop()
       try {
-        const participants = await db.all(`SELECT * FROM participants WHERE space_id = ?`, [space_id])
+        const participants = await db.all(`SELECT *
+                                           FROM participants
+                                           WHERE space_id = ?`, [space_id])
         if (participants.length === 0) {
-          console.log(chalk.red('No participants found!'))
+          console.log(chalk.yellow('WARNING:'), 'No participants found!')
           process.exit(0)
         }
         const csv = new ObjectsToCsv(participants)
         const filepath = `./cielago-${space_id}.csv`
         await csv.toDisk(filepath, {allColumns: true})
-        console.log(chalk.green('Export participants success! file path:', path.resolve(filepath)))
+        console.log(chalk.green('INFO:'), 'Export participants success! file path:', chalk.green(path.resolve(filepath)))
       } catch (e) {
-        console.log(chalk.grey(e))
+        console.log(chalk.yellow('WARNING:'), e)
       }
       await db.close()
     })
