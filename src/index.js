@@ -5,12 +5,10 @@ import {open} from 'sqlite';
 import ObjectsToCsv from 'objects-to-csv';
 import path from 'path';
 
-const USER_HOME = process.env.HOME || process.env.USERPROFILE;
-
 const program = new Command();
 
 const db = await open({
-  filename: path.join(USER_HOME, 'Cielago.db'),
+  filename: './Cielago.db',
   driver: sqlite3.Database
 })
 
@@ -105,25 +103,25 @@ program
                 res = JSON.parse(res)
                 const metadata = res.data.audioSpace.metadata
                 await insertSpace(metadata);
-                if (metadata.state === 'Running') {
-                  const {admins, speakers, listeners, total} = res.data.audioSpace.participants
-                  console.log('total participants:', total)
-                  for (const admin of admins) {
-                    await insertParticipants(metadata, 'admin', admin)
-                  }
-                  for (const speaker of speakers) {
-                    await insertParticipants(metadata, 'speaker', speaker)
-                  }
-                  for (const listener of listeners) {
-                    await insertParticipants(metadata, 'listener', listener)
-                  }
-                } else {
+                const {admins, speakers, listeners, total} = res.data.audioSpace.participants
+                console.log('total participants:', total)
+                for (const admin of admins) {
+                  await insertParticipants(metadata, 'admin', admin)
+                }
+                for (const speaker of speakers) {
+                  await insertParticipants(metadata, 'speaker', speaker)
+                }
+                for (const listener of listeners) {
+                  await insertParticipants(metadata, 'listener', listener)
+                }
+                if (metadata.state === 'Ended') {
                   console.log('This space is ended!', metadata.state)
                   await browser.close()
                   process.exit(0)
                 }
               }
             } catch (e) {
+              console.log(e)
             }
           }
         });
@@ -198,7 +196,7 @@ program
           process.exit(0)
         }
         const csv = new ObjectsToCsv(participants)
-        const filepath = path.join(USER_HOME, `cielago-${space_id}.csv`)
+        const filepath = `./cielago-${space_id}.csv`
         await csv.toDisk(filepath, {allColumns: true})
         console.log('Export participants success! file path:', path.resolve(filepath))
       } catch (e) {
