@@ -1,18 +1,13 @@
-import {Command} from 'commander';
-import puppeteer from 'puppeteer';
-import sqlite3 from 'sqlite3';
-import {open} from 'sqlite';
-import ObjectsToCsv from 'objects-to-csv';
-import path from 'path';
+const {Command} = require('commander');
+const puppeteer = require('puppeteer');
+const sqlite3 = require('sqlite3');
+const {open} = require('sqlite');
+const ObjectsToCsv = require('objects-to-csv');
+const path = require('path');
 
 const program = new Command();
 
-const db = await open({
-  filename: './Cielago.db',
-  driver: sqlite3.Database
-})
-
-const initDB = async () => {
+const initDB = async (db) => {
   await db.run(`CREATE TABLE IF NOT EXISTS space
                       (
                           rest_id               TEXT PRIMARY KEY,
@@ -47,7 +42,7 @@ const initDB = async () => {
                       )`)
 }
 
-const insertSpace = async (metadata) => {
+const insertSpace = async (db, metadata) => {
   await db.run(`REPLACE INTO space (rest_id, state, title, media_key, created_at, started_at, updated_at,
                                                  conversation_controls, total_replay_watched, total_live_listeners,
                                                  creator_rest_id)
@@ -57,7 +52,7 @@ const insertSpace = async (metadata) => {
         metadata.total_replay_watched, metadata.total_live_listeners, metadata.creator_results.result.rest_id])
 }
 
-const insertParticipants = async (metadata, role, user) => {
+const insertParticipants = async (db, metadata, role, user) => {
   await db.run(`REPLACE INTO participants (space_id, role, periscope_user_id, start, check_at,
                                                             twitter_screen_name,
                                                             display_name, avatar_url, is_verified, is_muted_by_admin,
@@ -74,7 +69,7 @@ const insertParticipants = async (metadata, role, user) => {
 
 program
     .name('cielago')
-    .version('0.0.2')
+    .version('0.0.3')
     .description('Cielago is a cli tool for twitter space. It can run a listener for twitter space and export data to csv file. Author: @tunogya')
 
 program
@@ -82,7 +77,11 @@ program
     .description('Run a listener for twitter space')
     .argument('<string>', 'twitter space url')
     .action(async (url, options) => {
-      await initDB();
+      const db = await open({
+        filename: './Cielago.db',
+        driver: sqlite3.Database
+      })
+      await initDB(db);
       const reg = new RegExp(/https:\/\/twitter.com\/i\/spaces\/\w+/)
       if (!reg.test(url)) {
         console.log('url is not valid')
@@ -102,17 +101,17 @@ program
               if (res) {
                 res = JSON.parse(res)
                 const metadata = res.data.audioSpace.metadata
-                await insertSpace(metadata);
+                await insertSpace(db, metadata);
                 const {admins, speakers, listeners, total} = res.data.audioSpace.participants
                 console.log('total participants:', total)
                 for (const admin of admins) {
-                  await insertParticipants(metadata, 'admin', admin)
+                  await insertParticipants(db, metadata, 'admin', admin)
                 }
                 for (const speaker of speakers) {
-                  await insertParticipants(metadata, 'speaker', speaker)
+                  await insertParticipants(db, metadata, 'speaker', speaker)
                 }
                 for (const listener of listeners) {
-                  await insertParticipants(metadata, 'listener', listener)
+                  await insertParticipants(db, metadata, 'listener', listener)
                 }
                 if (metadata.state === 'Ended') {
                   console.log('This space is ended!', metadata.state)
@@ -136,7 +135,11 @@ program
     .command('ps')
     .description('List all twitter spaces')
     .action(async () => {
-      await initDB();
+      const db = await open({
+        filename: './Cielago.db',
+        driver: sqlite3.Database
+      })
+      await initDB(db);
       try {
         const spaces = await db.all('SELECT * FROM space')
         // print a table of spaces
@@ -151,6 +154,7 @@ program
       } catch (e) {
         console.log(e)
       }
+      await db.close()
     })
 
 // remove a space all data from db
@@ -160,7 +164,11 @@ program
     .description('Remove a twitter space record')
     .argument('<string>', 'twitter space url')
     .action(async (url, options) => {
-      await initDB();
+      const db = await open({
+        filename: './Cielago.db',
+        driver: sqlite3.Database
+      })
+      await initDB(db);
       const reg = new RegExp(/https:\/\/twitter.com\/i\/spaces\/\w+/)
       if (!reg.test(url)) {
         console.log('url is not valid')
@@ -175,6 +183,7 @@ program
       } catch (e) {
         console.log(e)
       }
+      await db.close()
     })
 
 program
@@ -182,7 +191,11 @@ program
     .description('Export a twitter space log')
     .argument('<string>', 'twitter space url')
     .action(async (url, options) => {
-      await initDB();
+      const db = await open({
+        filename: './Cielago.db',
+        driver: sqlite3.Database
+      })
+      await initDB(db);
       const reg = new RegExp(/https:\/\/twitter.com\/i\/spaces\/\w+/)
       if (!reg.test(url)) {
         console.log('url is not valid')
@@ -202,6 +215,7 @@ program
       } catch (e) {
         console.log(e)
       }
+      await db.close()
     })
 
 program.parse();
