@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 const {Command} = require('commander');
 const puppeteer = require('puppeteer');
 const sqlite3 = require('sqlite3');
