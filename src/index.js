@@ -5,6 +5,7 @@ import sqlite3 from 'sqlite3';
 import {open} from 'sqlite';
 import ObjectsToCsv from 'objects-to-csv';
 import path from 'path';
+import chalk from "chalk";
 
 const program = new Command();
 
@@ -76,7 +77,7 @@ program
 program
     .command('run')
     .description('Run a listener for twitter space')
-    .argument('<string>', 'twitter space url')
+    .argument('<url>', 'twitter space url')
     .action(async (url, options) => {
       const db = await open({
         filename: './Cielago.db',
@@ -85,7 +86,7 @@ program
       await initDB(db);
       const reg = new RegExp(/https:\/\/twitter.com\/i\/spaces\/\w+/)
       if (!reg.test(url)) {
-        console.log('url is not valid')
+        console.log(chalk.red('url is not valid'))
         process.exit(0)
       }
       try {
@@ -104,7 +105,7 @@ program
                 const metadata = res.data.audioSpace.metadata
                 await insertSpace(db, metadata);
                 const {admins, speakers, listeners, total} = res.data.audioSpace.participants
-                console.log('total participants:', total)
+                console.log(chalk.green('total participants:', total))
                 for (const admin of admins) {
                   await insertParticipants(db, metadata, 'admin', admin)
                 }
@@ -115,19 +116,19 @@ program
                   await insertParticipants(db, metadata, 'listener', listener)
                 }
                 if (metadata.state === 'Ended') {
-                  console.log('This space is ended!', metadata.state)
+                  console.log(chalk.red('This space is ended!', metadata.state))
                   await browser.close()
                   process.exit(0)
                 }
               }
             } catch (e) {
-              console.log(e)
+              console.log(chalk.grey(e))
             }
           }
         });
         await page.goto(url);
       } catch (e) {
-        console.log(e)
+        console.log(chalk.grey(e))
       }
     })
 
@@ -146,14 +147,14 @@ program
         // print a table of spaces
         console.table(spaces.map((item) => ({
           state: item.state,
-          title: item.title,
+          title: item.title.slice(0, 10) + '...',
           started_at: new Date(item.started_at).toLocaleString(),
           total_replay_watched: item.total_replay_watched,
           total_live_listeners: item.total_live_listeners,
           url: `https://twitter.com/i/spaces/${item.rest_id}`,
         })))
       } catch (e) {
-        console.log(e)
+        console.log(chalk.grey(e))
       }
       await db.close()
     })
@@ -163,7 +164,7 @@ program
 program
     .command('rm')
     .description('Remove a twitter space record')
-    .argument('<string>', 'twitter space url')
+    .argument('<url>', 'twitter space url')
     .action(async (url, options) => {
       const db = await open({
         filename: './Cielago.db',
@@ -172,17 +173,17 @@ program
       await initDB(db);
       const reg = new RegExp(/https:\/\/twitter.com\/i\/spaces\/\w+/)
       if (!reg.test(url)) {
-        console.log('url is not valid')
+        console.log(chalk.red('url is not valid'))
         process.exit(0)
       }
       const space_id = url.split('/').pop()
       try {
         await db.run(`DELETE FROM space WHERE rest_id = ?`, [space_id])
-        console.log('space removed success!')
+        console.log(chalk.green('space removed success!'))
         await db.run(`DELETE FROM participants WHERE space_id = ?`, [space_id])
-        console.log('participants removed success!')
+        console.log(chalk.green('participants removed success!'))
       } catch (e) {
-        console.log(e)
+        console.log(chalk.grey(e))
       }
       await db.close()
     })
@@ -190,7 +191,7 @@ program
 program
     .command('export')
     .description('Export a twitter space log')
-    .argument('<string>', 'twitter space url')
+    .argument('<url>', 'twitter space url')
     .action(async (url, options) => {
       const db = await open({
         filename: './Cielago.db',
@@ -199,22 +200,22 @@ program
       await initDB(db);
       const reg = new RegExp(/https:\/\/twitter.com\/i\/spaces\/\w+/)
       if (!reg.test(url)) {
-        console.log('url is not valid')
+        console.log(chalk.red('url is not valid'))
         process.exit(0)
       }
       const space_id = url.split('/').pop()
       try {
         const participants = await db.all(`SELECT * FROM participants WHERE space_id = ?`, [space_id])
         if (participants.length === 0) {
-          console.log('No participants found!')
+          console.log(chalk.red('No participants found!'))
           process.exit(0)
         }
         const csv = new ObjectsToCsv(participants)
         const filepath = `./cielago-${space_id}.csv`
         await csv.toDisk(filepath, {allColumns: true})
-        console.log('Export participants success! file path:', path.resolve(filepath))
+        console.log(chalk.green('Export participants success! file path:', path.resolve(filepath)))
       } catch (e) {
-        console.log(e)
+        console.log(chalk.grey(e))
       }
       await db.close()
     })
