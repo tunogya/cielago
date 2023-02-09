@@ -92,7 +92,7 @@ program
       }
       // delete ? and all string behind ? in url
       url = url.split('?')[0]
-      console.log(chalk.green('INFO:'), `cielago@${program.version()}`)
+      console.log(chalk.green('INFO:'), `cielago@${program.version()}`, 'author: @tunogya')
       console.log(chalk.green('INFO:'), 'twitter space:', url)
       try {
         console.log(chalk.green('INFO:'), 'Start puppeteer...')
