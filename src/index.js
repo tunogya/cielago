@@ -90,6 +90,8 @@ program
         console.log(chalk.red('url is not valid'))
         process.exit(0)
       }
+      // delete ? and all string behind ? in url
+      url = url.split('?')[0]
       try {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
@@ -98,7 +100,7 @@ program
         )
         page.on('response', async (response) => {
           const regexp = new RegExp('https://api.twitter.com/graphql/.*AudioSpaceById')
-          if (regexp.test(response.url())) {
+          if (regexp.test(response.url()) && response.request().method() === "GET") {
             try {
               let res = await response.text()
               if (res) {
@@ -177,6 +179,7 @@ program
         console.log(chalk.red('url is not valid'))
         process.exit(0)
       }
+      url = url.split('?')[0]
       const space_id = url.split('/').pop()
       try {
         await db.run(`DELETE FROM space WHERE rest_id = ?`, [space_id])
@@ -204,6 +207,7 @@ program
         console.log(chalk.red('url is not valid'))
         process.exit(0)
       }
+      url = url.split('?')[0]
       const space_id = url.split('/').pop()
       try {
         const participants = await db.all(`SELECT * FROM participants WHERE space_id = ?`, [space_id])
