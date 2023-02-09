@@ -105,7 +105,7 @@ program
                 const metadata = res.data.audioSpace.metadata
                 await insertSpace(db, metadata);
                 const {admins, speakers, listeners, total} = res.data.audioSpace.participants
-                console.log(chalk.green('total participants:', total))
+                console.log(chalk.green(metadata.title.slice(0, 10) + '...', 'total participants:', total))
                 for (const admin of admins) {
                   await insertParticipants(db, metadata, 'admin', admin)
                 }
@@ -116,7 +116,7 @@ program
                   await insertParticipants(db, metadata, 'listener', listener)
                 }
                 if (metadata.state === 'Ended') {
-                  console.log(chalk.red('This space is ended!', metadata.state))
+                  console.log(chalk.red(metadata.title.slice(0, 10) + '...', 'This space is ended!'))
                   await browser.close()
                   process.exit(0)
                 }
