@@ -71,13 +71,14 @@ const insertParticipants = async (db, metadata, role, user) => {
 
 program
     .name('cielago')
-    .version('0.0.4')
+    .version('0.0.5')
     .description('Cielago is a cli tool for twitter space. It can run a listener for twitter space and export data to csv file. Author: @tunogya')
 
 program
     .command('run')
     .description('Run a listener for twitter space')
     .argument('<url>', 'twitter space url')
+    .option('-d, --daemon', 'run as daemon')
     .action(async (url, options) => {
       const db = await open({
         filename: './Cielago.db',
