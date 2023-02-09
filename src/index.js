@@ -70,7 +70,7 @@ const insertParticipants = async (db, metadata, role, user) => {
 
 program
     .name('cielago')
-    .version('0.0.3')
+    .version('0.0.4')
     .description('Cielago is a cli tool for twitter space. It can run a listener for twitter space and export data to csv file. Author: @tunogya')
 
 program
