@@ -18,18 +18,16 @@ program
     .argument('<url>', 'twitter space url')
     .action(run)
 
-// TODO can have -watch option to watch the space
 program
     .command('ps')
     .description('list all twitter spaces')
     .action(ps)
 
-// remove a space all data from db
-// TODO can have -a option to remove all spaces
 program
     .command('rm')
     .description('remove a twitter space record')
-    .argument('<url>', 'twitter space url')
+    .option('-a, --all', 'remove all twitter space record')
+    .argument('[urls...]', 'twitter space url')
     .action(rm)
 
 program
