@@ -15,7 +15,7 @@ program
 program
     .command('run')
     .description('run a listener for twitter space')
-    .argument('<url>', 'twitter space url')
+    .argument('<url>', 'twitter space url or id')
     .action(run)
 
 program
@@ -27,13 +27,13 @@ program
     .command('rm')
     .description('remove a twitter space record')
     .option('-a, --all', 'remove all twitter space record')
-    .argument('[urls...]', 'twitter space url')
+    .argument('[urls...]', 'twitter space urls or ids')
     .action(rm)
 
 program
     .command('export')
     .description('export a twitter space log')
-    .argument('<url>', 'twitter space url')
+    .argument('[urls...]', 'twitter space urls or ids')
     .action(_export)
 
 program.parse();

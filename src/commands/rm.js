@@ -23,21 +23,19 @@ const rm = async (urls, options) => {
   } else {
     for (let url of urls) {
       const reg = new RegExp(/https:\/\/twitter.com\/i\/spaces\/\w+/)
-      if (!reg.test(url)) {
-        console.log(chalk.red('ERROR:'), `${url} is not valid url`)
-        continue;
+      if (reg.test(url)) {
+        url = url.split('?')[0]
       }
-      url = url.split('?')[0]
       const space_id = url.split('/').pop()
       try {
         await db.run(`DELETE
                       FROM space
                       WHERE rest_id = ?`, [space_id])
-        console.log(chalk.green('INFO:'), 'space removed success!')
+        console.log(chalk.green('INFO:'), `${space_id} space removed success!`)
         await db.run(`DELETE
                       FROM participants
                       WHERE space_id = ?`, [space_id])
-        console.log(chalk.green('INFO:'), 'participants removed success!')
+        console.log(chalk.green('INFO:'), `${space_id} participants removed success!`)
       } catch (e) {
         console.log(chalk.yellow('WARNING:'), e)
       }
