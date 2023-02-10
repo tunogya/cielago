@@ -9,7 +9,7 @@ const program = new Command();
 
 program
     .name('cielago')
-    .version('0.0.6')
+    .version('0.0.7')
     .description('Cielago is a cli tool for twitter space. It can run a listener for twitter space and export data to csv file. Author: @tunogya')
 
 program
