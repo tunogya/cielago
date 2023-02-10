@@ -2,17 +2,18 @@
 
 [![Node.js Package](https://github.com/tunogya/cielago/actions/workflows/npm-publish.yml/badge.svg?event=release)](https://github.com/tunogya/cielago/actions/workflows/npm-publish.yml)
 
-Cielago is a cli tool for twitter space. It can run a listener for twitter space and export data to csv file.
+Welcome to cielago, a powerful and convenient CLI tool for downloading Twitter Space audience information. With this tool, you can easily gather data about your audience and make the most of your Twitter Space experience, all without ever having to log in to Twitter.
+
 
 ## Highlights
 
-- No need to log in to Twitter.
-- Local storage for twitter space data.
-- Export data to csv file.
+- **No Login Required**: With cielago, you can download Twitter Space audience information without ever having to log in to Twitter. This means you can access your data more securely and easily, without risking your privacy.
+- **Local and Secure**: The data you download with cielago is stored locally on your machine, giving you complete control and privacy over your information.
+- **Powerful and Convenient**: cielago is a powerful and easy-to-use CLI tool that makes it simple to gather the information you need about your Twitter Space audience.
 
 ## Background
 
-- Twitter do not have REST API to get data from twitter space.
+- Twitter do not have any free API to get those data of twitter space.
 - Twitter graphQL API only use for Twitter app.
 
 ## Install
@@ -28,11 +29,29 @@ npm install cielago -g
 Run a listener for twitter space:
 
 ```bash
-cielago run https://twitter.com/i/spaces/xxxxxxxxx
+$ cielago run https://twitter.com/i/spaces/xxxxxxxxx
+
+or
+
+$ cielago run xxxxxxxxx
 ```
 
 List all twitter spaces:
 
 ```bash
-cielago ps
+$ cielago ps
 ```
+
+Export data to csv:
+
+```bash
+$ cielago export xxxxxxxxx
+```
+
+## Open Source
+
+cielago is an open-source project, and we welcome contributions from the community. If you're interested in helping to improve cielago, please visit our GitHub repository for more information.
+
+## Conclusion
+
+If you're looking for a fast, easy, and secure way to access your Twitter Space audience information, look no further than cielago. Give it a try today and see what you can discover!
