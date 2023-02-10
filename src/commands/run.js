@@ -11,12 +11,11 @@ const run = async (url) => {
   })
   await initDB(db);
   const reg = new RegExp(/https:\/\/twitter.com\/i\/spaces\/\w+/)
-  if (!reg.test(url)) {
-    console.log(chalk.red('ERROR:'), 'Url is not valid')
-    process.exit(0)
-  }
-  // delete ? and all string behind ? in url
   url = url.split('?')[0]
+  if (!reg.test(url)) {
+    url = url.split('/').pop()
+    url = `https://twitter.com/i/spaces/${url}`
+  }
   console.log(chalk.green('INFO:'), 'cielago', 'made by @tunogya')
   console.log(chalk.green('INFO:'), 'twitter space:', url)
   try {
