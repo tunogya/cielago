@@ -14,27 +14,27 @@ program
 
 program
     .command('run')
-    .description('Run a listener for twitter space')
+    .description('run a listener for twitter space')
     .argument('<url>', 'twitter space url')
     .action(run)
 
 // TODO can have -watch option to watch the space
 program
     .command('ps')
-    .description('List all twitter spaces')
+    .description('list all twitter spaces')
     .action(ps)
 
 // remove a space all data from db
 // TODO can have -a option to remove all spaces
 program
     .command('rm')
-    .description('Remove a twitter space record')
+    .description('remove a twitter space record')
     .argument('<url>', 'twitter space url')
     .action(rm)
 
 program
     .command('export')
-    .description('Export a twitter space log')
+    .description('export a twitter space log')
     .argument('<url>', 'twitter space url')
     .action(_export)
 
